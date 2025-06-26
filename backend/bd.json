@@ -1,0 +1,47 @@
+{
+  "alunos": [
+    {
+      "id": 1,
+      "nome": "João",
+      "apelido": "Silva",
+      "curso": "Engenharia Informática",
+      "anoCurricular": 2
+    },
+    {
+      "id": 2,
+      "nome": "Maria",
+      "apelido": "Santos",
+      "curso": "Ciência de Dados",
+      "anoCurricular": 3
+    },
+    {
+      "id": 3,
+      "nome": "Carlos",
+      "apelido": "Ferreira",
+      "curso": "Design Multimedia",
+      "anoCurricular": 1
+    }
+  ],
+  "cursos": [
+    {
+      "id": 1,
+      "nomeDoCurso": "Engenharia Informática"
+    },
+    {
+      "id": 2,
+      "nomeDoCurso": "Ciência de Dados"
+    },
+    {
+      "id": 3,
+      "nomeDoCurso": "Design Multimedia"
+    },
+    {
+      "id": 4,
+      "nomeDoCurso": "Medicina"
+    },
+    {
+      "id": 5,
+      "nomeDoCurso": "Arquitetura"
+    }
+  ]
+}
