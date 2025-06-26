@@ -1,0 +1,22 @@
+{
+  "alunos": [
+    {
+      "id": 1,
+      "nome": "Gonçalo",
+      "apelido": "Martins",
+      "curso": "Engenharia Informática",
+      "anoCurricular": 2
+    },
+    {
+      "id": 2,
+      "nome": "Ana",
+      "apelido": "Silva",
+      "curso": "Design Multimédia",
+      "anoCurricular": 1
+    }
+  ],
+  "cursos": [
+    { "id": 1, "nomeDoCurso": "Engenharia Informática" },
+    { "id": 2, "nomeDoCurso": "Design Multimédia" }
+  ]
+}
