@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Alunos</title>
+  <style>
+    /* CSS incorporado para facilitar */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1, h2 {
+      color: #2c3e50;
+    }
+
+    .form-container {
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background: #2980b9;
+    }
+
+    #cancel-btn {
+      background: #e74c3c;
+    }
+
+    #cancel-btn:hover {
+      background: #c0392b;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #3498db;
+      color: white;
+    }
+
+    tr:hover {
+      background-color: #f5f5f5;
+    }
+
+    .action-btn {
+      padding: 5px 10px;
+      margin: 0 5px;
+    }
+
+    .edit-btn {
+      background: #f39c12;
+    }
+
+    .edit-btn:hover {
+      background: #d35400;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+    }
+
+    .delete-btn:hover {
+      background: #c0392b;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px;
+      border-radius: 5px;
+      color: white;
+      display: none;
+    }
+
+    .success {
+      background-color: #2ecc71;
+    }
+
+    .error {
+      background-color: #e74c3c;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Gestão de Alunos</h1>
+    
+    <div class="notification success" id="success-notification"></div>
+    <div class="notification error" id="error-notification"></div>
+    
+    <div class="form-container">
+      <h2 id="form-title">Adicionar Novo Aluno</h2>
+      <form id="alunoForm">
+        <input type="hidden" id="alunoId">
+        <div class="form-group">
+          <label for="nome">Nome:</label>
+          <input type="text" id="nome" required>
+        </div>
+        <div class="form-group">
+          <label for="apelido">Apelido:</label>
+          <input type="text" id="apelido" required>
+        </div>
+        <div class="form-group">
+          <label for="curso">Curso:</label>
+          <select id="curso" required></select>
+        </div>
+        <div class="form-group">
+          <label for="anoCurricular">Ano Curricular:</label>
+          <input type="number" id="anoCurricular" min="1" max="5" required>
+        </div>
+        <button type="submit" id="submit-btn">Adicionar</button>
+        <button type="button" id="cancel-btn" style="display: none;">Cancelar</button>
+      </form>
+    </div>
+    
+    <div class="table-container">
+      <h2>Lista de Alunos</h2>
+      <div class="search-container" style="margin-bottom: 15px;">
+        <input type="text" id="searchInput" placeholder="Pesquisar alunos...">
+      </div>
+      <table id="alunosTable">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Apelido</th>
+            <th>Curso</th>
+            <th>Ano</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // JavaScript incorporado
+    document.addEventListener('DOMContentLoaded', () => {
+      // Elementos do DOM
+      const alunosTable = document.querySelector('#alunosTable tbody');
+      const alunoForm = document.getElementById('alunoForm');
+      const cursoSelect = document.getElementById('curso');
+      const formTitle = document.getElementById('form-title');
+      const submitBtn = document.getElementById('submit-btn');
+      const cancelBtn = document.getElementById('cancel-btn');
+      const searchInput = document.getElementById('searchInput');
+      const successNotification = document.getElementById('success-notification');
+      const errorNotification = document.getElementById('error-notification');
+      let editingId = null;
+      let allAlunos = [];
+
+      // Configuração da API
+      const API_BASE_URL = 'http://localhost:3000'; // Altere para sua API real quando fizer deploy
+      const ALUNOS_ENDPOINT = `${API_BASE_URL}/alunos`;
+      const CURSOS_ENDPOINT = `${API_BASE_URL}/cursos`;
+
+      // Mostrar notificação
+      function showNotification(message, isSuccess = true) {
+        const notification = isSuccess ? successNotification : errorNotification;
+        notification.textContent = message;
+        notification.style.display = 'block';
+        
+        setTimeout(() => {
+          notification.style.display = 'none';
+        }, 3000);
+      }
+
+      // Carregar cursos no select
+      async function carregarCursos() {
+        try {
+          const response = await fetch(CURSOS_ENDPOINT);
+          if (!response.ok) throw new Error('Erro ao carregar cursos');
+          
+          const cursos = await response.json();
+          cursoSelect.innerHTML = '';
+          
+          const defaultOption = document.createElement('option');
+          defaultOption.value = '';
+          defaultOption.textContent = 'Selecione um curso';
+          cursoSelect.appendChild(defaultOption);
+          
+          cursos.forEach(curso => {
+            const option = document.createElement('option');
+            option.value = curso.nomeDoCurso || curso.nome; // Compatibilidade com ambas APIs
+            option.textContent = curso.nomeDoCurso || curso.nome;
+            cursoSelect.appendChild(option);
+          });
+        } catch (error) {
+          console.error('Erro ao carregar cursos:', error);
+          showNotification('Erro ao carregar cursos', false);
+        }
+      }
+
+      // Carregar alunos na tabela
+      async function carregarAlunos() {
+        try {
+          const response = await fetch(ALUNOS_ENDPOINT);
+          if (!response.ok) throw new Error('Erro ao carregar alunos');
+          
+          allAlunos = await response.json();
+          renderAlunos(allAlunos);
+        } catch (error) {
+          console.error('Erro ao carregar alunos:', error);
+          showNotification('Erro ao carregar alunos', false);
+        }
+      }
+
+      // Renderizar alunos na tabela
+      function renderAlunos(alunos) {
+        alunosTable.innerHTML = '';
+        
+        if (alunos.length === 0) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `<td colspan="5" style="text-align: center;">Nenhum aluno encontrado</td>`;
+          alunosTable.appendChild(tr);
+          return;
+        }
+        
+        alunos.forEach(aluno => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${aluno.nome}</td>
+            <td>${aluno.apelido}</td>
+            <td>${aluno.curso}</td>
+            <td>${aluno.anoCurricular}</td>
+            <td>
+              <button class="action-btn edit-btn" data-id="${aluno.id}">Editar</button>
+              <button class="action-btn delete-btn" data-id="${aluno.id}">Apagar</button>
+            </td>
+          `;
+          alunosTable.appendChild(tr);
+        });
+
+        // Adicionar event listeners aos botões
+        document.querySelectorAll('.edit-btn').forEach(btn => {
+          btn.addEventListener('click', () => editarAluno(btn.getAttribute('data-id')));
+        });
+        
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+          btn.addEventListener('click', () => apagarAluno(btn.getAttribute('data-id')));
+        });
+      }
+
+      // Filtrar alunos
+      searchInput.addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        const filteredAlunos = allAlunos.filter(aluno => 
+          aluno.nome.toLowerCase().includes(searchTerm) || 
+          aluno.apelido.toLowerCase().includes(searchTerm) ||
+          aluno.curso.toLowerCase().includes(searchTerm)
+        );
+        renderAlunos(filteredAlunos);
+      });
+
+      // Formulário: Adicionar/Editar aluno
+      alunoForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const alunoData = {
+          nome: document.getElementById('nome').value,
+          apelido: document.getElementById('apelido').value,
+          curso: cursoSelect.value,
+          anoCurricular: parseInt(document.getElementById('anoCurricular').value)
+        };
+
+        try {
+          let response;
+          if (editingId) {
+            // Editar aluno existente
+            response = await fetch(`${ALUNOS_ENDPOINT}/${editingId}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(alunoData)
+            });
+            showNotification('Aluno atualizado com sucesso!');
+          } else {
+            // Adicionar novo aluno
+            response = await fetch(ALUNOS_ENDPOINT, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(alunoData)
+            });
+            showNotification('Aluno adicionado com sucesso!');
+          }
+
+          if (!response.ok) throw new Error('Erro ao salvar aluno');
+          
+          resetForm();
+          await carregarAlunos();
+        } catch (error) {
+          console.error('Erro ao salvar aluno:', error);
+          showNotification('Erro ao salvar aluno', false);
+        }
+      });
+
+      // Cancelar edição
+      cancelBtn.addEventListener('click', resetForm);
+
+      // Função para editar aluno
+      async function editarAluno(id) {
+        try {
+          const response = await fetch(`${ALUNOS_ENDPOINT}/${id}`);
+          if (!response.ok) throw new Error('Erro ao carregar aluno');
+          
+          const aluno = await response.json();
+          editingId = id;
+          
+          document.getElementById('nome').value = aluno.nome;
+          document.getElementById('apelido').value = aluno.apelido;
+          document.getElementById('anoCurricular').value = aluno.anoCurricular;
+          cursoSelect.value = aluno.curso;
+          
+          formTitle.textContent = 'Editar Aluno';
+          submitBtn.textContent = 'Atualizar';
+          cancelBtn.style.display = 'inline-block';
+          
+          // Rolagem suave para o formulário
+          document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+          console.error('Erro ao carregar aluno para edição:', error);
+          showNotification('Erro ao carregar aluno para edição', false);
+        }
+      }
+
+      // Função para apagar aluno
+      async function apagarAluno(id) {
+        if (!confirm('Tem certeza que deseja apagar este aluno?')) return;
+        
+        try {
+          const response = await fetch(`${ALUNOS_ENDPOINT}/${id}`, {
+            method: 'DELETE'
+          });
+          
+          if (!response.ok) throw new Error('Erro ao apagar aluno');
+          
+          showNotification('Aluno apagado com sucesso!');
+          await carregarAlunos();
+        } catch (error) {
+          console.error('Erro ao apagar aluno:', error);
+          showNotification('Erro ao apagar aluno', false);
+        }
+      }
+
+      // Resetar formulário
+      function resetForm() {
+        alunoForm.reset();
+        editingId = null;
+        formTitle.textContent = 'Adicionar Novo Aluno';
+        submitBtn.textContent = 'Adicionar';
+        cancelBtn.style.display = 'none';
+      }
+
+      // Inicializar
+      carregarCursos();
+      carregarAlunos();
+    });
+  </script>
+</body>
+</html>
