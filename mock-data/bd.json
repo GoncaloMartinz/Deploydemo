@@ -1,11 +1,8 @@
 {
   "alunos": [
     {
-      "id": 1,
-      "nome": "Gonçalo",
-      "apelido": "Martins",
-      "curso": "Engenharia Informática",
-      "anoCurricular": 2
+      "anoCurricular": 2,
+      "id": 1
     },
     {
       "id": 2,
@@ -13,10 +10,23 @@
       "apelido": "Silva",
       "curso": "Design Multimédia",
       "anoCurricular": 1
+    },
+    {
+      "nome": "Exemplo",
+      "apelido": "Teste",
+      "curso": "Engenharia",
+      "anoCurricular": 1,
+      "id": 4
     }
   ],
   "cursos": [
-    { "id": 1, "nomeDoCurso": "Engenharia Informática" },
-    { "id": 2, "nomeDoCurso": "Design Multimédia" }
+    {
+      "id": 1,
+      "nomeDoCurso": "Engenharia Informática"
+    },
+    {
+      "id": 2,
+      "nomeDoCurso": "Design Multimédia"
+    }
   ]
 }
