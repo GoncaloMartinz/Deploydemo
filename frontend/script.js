@@ -1,5 +1,8 @@
-// Configuração da API
-const API_BASE_URL = 'https://academicos-api.onrender.com/api';
+// Configuração da API (funciona em ambos ambientes)
+const API_BASE_URL = window.location.hostname === 'localhost' 
+  ? 'http://localhost:10000/api' 
+  : 'https://academicos-api.onrender.com/api';
+
 const ALUNOS_ENDPOINT = `${API_BASE_URL}/alunos`;
 
 // Elementos DOM
@@ -11,7 +14,9 @@ async function carregarAlunos() {
   try {
     const response = await fetch(ALUNOS_ENDPOINT);
     
-    if (!response.ok) throw new Error(`Erro HTTP: ${response.status}`);
+    if (!response.ok) {
+      throw new Error(`Erro: ${response.status}`);
+    }
     
     const alunos = await response.json();
     renderizarAlunos(alunos);
@@ -21,7 +26,7 @@ async function carregarAlunos() {
   }
 }
 
-// Função para renderizar alunos na tabela
+// Função para renderizar alunos
 function renderizarAlunos(alunos) {
   tabelaAlunos.innerHTML = alunos.length > 0 
     ? alunos.map(aluno => `
@@ -38,7 +43,7 @@ function renderizarAlunos(alunos) {
     : `<tr><td colspan="5">Nenhum aluno cadastrado</td></tr>`;
 }
 
-// Event Delegation para apagar alunos
+// Evento para apagar alunos
 document.addEventListener('click', async (e) => {
   if (e.target.classList.contains('delete-btn')) {
     if (!confirm('Tem certeza que deseja apagar este aluno?')) return;
@@ -60,7 +65,7 @@ document.addEventListener('click', async (e) => {
   }
 });
 
-// Cadastrar novo aluno
+// Evento para cadastrar aluno
 formAluno.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -89,15 +94,20 @@ formAluno.addEventListener('submit', async (e) => {
   }
 });
 
-// Sistema de notificações
+// Sistema de notificações simplificado
 function mostrarNotificacao(mensagem, sucesso = true) {
   const notificacao = document.createElement('div');
   notificacao.className = `notificacao ${sucesso ? 'sucesso' : 'erro'}`;
   notificacao.textContent = mensagem;
   document.body.appendChild(notificacao);
 
-  setTimeout(() => notificacao.remove(), 3000);
+  setTimeout(() => {
+    notificacao.style.opacity = '0';
+    setTimeout(() => notificacao.remove(), 500);
+  }, 3000);
 }
 
-// Inicialização
+
+
+// Inicia a aplicação
 document.addEventListener('DOMContentLoaded', carregarAlunos);
