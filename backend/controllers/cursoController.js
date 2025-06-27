@@ -1,2 +1,11 @@
 const Curso = require('../models/Curso');
-exports.listar = async (req, res) => res.json(await Curso.find());
+
+// GET /api/cursos
+exports.listar = async (req, res) => {
+  try {
+    const cursos = await Curso.find();
+    res.json(cursos);
+  } catch (error) {
+    res.status(500).json({ error: 'Erro ao listar cursos' });
+  }
+};
