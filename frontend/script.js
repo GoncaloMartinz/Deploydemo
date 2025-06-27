@@ -1,4 +1,4 @@
-const apiUrl = 'http://localhost:3001/alunos';
+const apiUrl = 'https://academicos-api.onrender.com/api';
 const lista = document.getElementById('lista-alunos');
 const form = document.getElementById('form-aluno');
 
